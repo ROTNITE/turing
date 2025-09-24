@@ -1,0 +1,347 @@
+<!-- path: index.html -->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Интерактивный симулятор квантовой машины Тьюринга с визуализацией квантовых состояний">
+    <meta name="keywords" content="квантовые вычисления, машина Тьюринга, симуляция, образование">
+    
+    <title>Квантовая машина Тьюринга - Симулятор</title>
+    
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%23ff6b6b' d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z'/></svg>">
+</head>
+
+<body class="qtm-app" data-theme="dark">
+    <div class="layout">
+        <!-- Заголовок -->
+        <header class="app-header">
+            <div class="header-content">
+                <h1 class="app-title">
+                    <span class="quantum-symbol">⚛️</span>
+                    Квантовая машина Тьюринга
+                    <span class="version">v2.0</span>
+                </h1>
+                
+                <div class="header-controls">
+                    <button id="theme-toggle" class="theme-toggle" title="Переключить тему">
+                        <span class="theme-icon">🌙</span>
+                    </button>
+                    <button id="help-button" class="help-button" title="Справка">?</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Основная область -->
+        <main class="app-main">
+            <!-- Панель управления -->
+            <section class="control-panel" role="region" aria-label="Управление симуляцией">
+                <div class="panel-header">
+                    <h2>Управление симуляцией</h2>
+                    <div class="status-indicators">
+                        <span id="step-counter" class="status-item">Шагов: 0</span>
+                        <span id="timer" class="status-item">Время: 00:00</span>
+                        <span id="status" class="status-item state-ready">Готов</span>
+                    </div>
+                </div>
+
+                <div class="control-buttons">
+                    <button type="button" id="start-btn" class="btn btn-primary">
+                        ▶️ Старт
+                    </button>
+                    <button type="button" id="stop-btn" class="btn btn-ghost" disabled>
+                        ⏹️ Стоп  
+                    </button>
+                    <button type="button" id="step-btn" class="btn btn-ghost">
+                        ⏭️ Шаг
+                    </button>
+                    <button type="button" id="reset-btn" class="btn btn-ghost">
+                        🔄 Сброс
+                    </button>
+                </div>
+
+                <div class="control-settings">
+                    <div class="setting-group">
+                        <label for="speed-slider" class="label">
+                            Скорость симуляции: <span id="speed-value" class="speed-display">5</span>
+                        </label>
+                        <input type="range" id="speed-slider" class="slider" min="1" max="10" value="5">
+                    </div>
+
+                    <div class="setting-group">
+                        <label for="algorithm-select" class="label">Алгоритм:</label>
+                        <select id="algorithm-select" class="select algorithm-selector">
+                            <option value="">Ручная настройка</option>
+                            <optgroup label="Состояния Белла">
+                                <option value="bell-phi-plus">Φ⁺ = (|00⟩ + |11⟩)/√2</option>
+                                <option value="bell-phi-minus">Φ⁻ = (|00⟩ - |11⟩)/√2</option>
+                                <option value="bell-psi-plus">Ψ⁺ = (|01⟩ + |10⟩)/√2</option>
+                                <option value="bell-psi-minus">Ψ⁻ = (|01⟩ - |10⟩)/√2</option>
+                            </optgroup>
+                            <optgroup label="Алгоритм Дойча">
+                                <option value="deutsch-constant">Дойч (константная функция)</option>
+                                <option value="deutsch-balanced">Дойч (сбалансированная функция)</option>
+                            </optgroup>
+                            <optgroup label="Алгоритм Гровера">
+                                <option value="grover-00">Гровер (поиск |00⟩)</option>
+                                <option value="grover-01">Гровер (поиск |01⟩)</option>
+                                <option value="grover-10">Гровер (поиск |10⟩)</option>
+                                <option value="grover-11">Гровер (поиск |11⟩)</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Рабочая область с лентами -->
+            <section class="workspace">
+                <div class="tapes-container">
+                    <!-- Лента 1: Входные данные -->
+                    <div class="tape-section">
+                        <div class="tape-title">
+                            <span class="tape-icon">📥</span>
+                            <h3>Лента 1: Входные данные</h3>
+                            <button type="button" class="tape-config-btn">⚙️</button>
+                        </div>
+                        <div class="tape-container">
+                            <canvas id="tape1-canvas" class="tape-canvas" width="600" height="60"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Лента 2: Промежуточные вычисления -->
+                    <div class="tape-section">
+                        <div class="tape-title">
+                            <span class="tape-icon">⚙️</span>
+                            <h3>Лента 2: Промежуточные вычисления</h3>
+                            <button type="button" class="tape-config-btn">⚙️</button>
+                        </div>
+                        <div class="tape-container">
+                            <canvas id="tape2-canvas" class="tape-canvas" width="600" height="60"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Лента 3: Выходные данные -->
+                    <div class="tape-section">
+                        <div class="tape-title">
+                            <span class="tape-icon">📤</span>
+                            <h3>Лента 3: Выходные данные</h3>
+                            <button type="button" class="tape-config-btn">⚙️</button>
+                        </div>
+                        <div class="tape-container">
+                            <canvas id="tape3-canvas" class="tape-canvas" width="600" height="60"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Область визуализации -->
+            <section class="visualization-area">
+                <!-- Блох-сфера -->
+                <div class="viz-panel">
+                    <div class="panel-header">
+                        <h3>Квантовые состояния</h3>
+                        <div class="panel-controls">
+                            <select id="qubit-selector" class="select">
+                                <option value="0">Кубит 0</option>
+                                <option value="1">Кубит 1</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="bloch-container">
+                        <h4>Блох-сфера</h4>
+                        <div class="bloch-wrapper">
+                            <canvas id="bloch-canvas" width="300" height="300"></canvas>
+                        </div>
+                        <div class="bloch-controls">
+                            <div class="checkbox-label">
+                                <input type="checkbox" id="show-angles" checked>
+                                <label for="show-angles">Показать углы θ, φ</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Амплитуды вероятностей -->
+                <div class="viz-panel">
+                    <div class="panel-header">
+                        <h3>Амплитуды вероятностей</h3>
+                    </div>
+
+                    <div class="amplitudes-container">
+                        <div class="amplitudes-wrapper">
+                            <canvas id="amplitudes-canvas" width="400" height="250"></canvas>
+                        </div>
+                        
+                        <div class="amplitudes-controls">
+                            <div class="checkbox-label">
+                                <input type="checkbox" id="show-real" checked>
+                                <label for="show-real">Re(ψ)</label>
+                            </div>
+                            <div class="checkbox-label">
+                                <input type="checkbox" id="show-imaginary" checked>
+                                <label for="show-imaginary">Im(ψ)</label>
+                            </div>
+                            <div class="checkbox-label">
+                                <input type="checkbox" id="show-probabilities" checked>
+                                <label for="show-probabilities">|ψ|²</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Квантовые операции -->
+            <section class="operations-panel panel">
+                <div class="operations-content">
+                    <!-- Палитра квантовых вентилей -->
+                    <div class="gates-palette">
+                        <h4>Квантовые операции</h4>
+                        
+                        <div class="gates-grid">
+                            <!-- Однокубитные вентили -->
+                            <div class="gate-category">
+                                <h5>Однокубитные вентили</h5>
+                                <div class="gate-buttons">
+                                    <button type="button" class="gate-btn" data-gate="I" title="Тождественный вентиль">I</button>
+                                    <button type="button" class="gate-btn" data-gate="X" title="Паули-X (NOT)">X</button>
+                                    <button type="button" class="gate-btn" data-gate="Y" title="Паули-Y">Y</button>
+                                    <button type="button" class="gate-btn" data-gate="Z" title="Паули-Z">Z</button>
+                                    <button type="button" class="gate-btn" data-gate="H" title="Адамар">H</button>
+                                    <button type="button" class="gate-btn" data-gate="S" title="Фазовый S">S</button>
+                                    <button type="button" class="gate-btn" data-gate="T" title="T-вентиль">T</button>
+                                </div>
+                            </div>
+
+                            <!-- Двухкубитные вентили -->
+                            <div class="gate-category">
+                                <h5>Двухкубитные вентили</h5>
+                                <div class="gate-buttons">
+                                    <button type="button" class="gate-btn two-qubit" data-gate="CNOT" title="Контролируемый NOT">⊕</button>
+                                    <button type="button" class="gate-btn two-qubit" data-gate="CZ" title="Контролируемый Z">CZ</button>
+                                    <button type="button" class="gate-btn two-qubit" data-gate="SWAP" title="Обмен состояниями">⇄</button>
+                                </div>
+                                
+                                <div class="qubit-selection">
+                                    <label for="control-qubit">Управляющий:</label>
+                                    <select id="control-qubit" class="qubit-select">
+                                        <option value="0">Кубит 0</option>
+                                        <option value="1">Кубит 1</option>
+                                    </select>
+                                    
+                                    <label for="target-qubit">Целевой:</label>
+                                    <select id="target-qubit" class="qubit-select">
+                                        <option value="0">Кубит 0</option>
+                                        <option value="1" selected>Кубит 1</option>
+                                    </select>
+                                </div>
+                                
+                                <div id="two-qubit-warning" class="warning" style="display: none;">
+                                    ⚠️ Управляющий и целевой кубиты должны различаться
+                                </div>
+                            </div>
+
+                            <!-- Измерения -->
+                            <div class="gate-category">
+                                <h5>Измерения</h5>
+                                <div class="gate-buttons">
+                                    <button type="button" class="gate-btn measure" id="measure-btn" title="Измерить выбранный кубит">📏</button>
+                                    <button type="button" class="gate-btn measure" id="measure-all-btn" title="Измерить все кубиты">📐</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- История операций -->
+                    <div class="operations-history">
+                        <h4>История операций</h4>
+                        <div id="operations-log" class="operations-log">
+                            <div class="log-entry initial">Система готова к работе</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Панель справки/легенды -->
+        <aside class="info-panel">
+            <div class="panel-title">Легенда квантовых состояний</div>
+            <div class="legend-content">
+                <div class="legend-item">
+                    <div class="state-example state-0">0</div>
+                    <div class="state-description">|0⟩ - основное состояние</div>
+                </div>
+                
+                <div class="legend-item">
+                    <div class="state-example state-1">1</div>
+                    <div class="state-description">|1⟩ - возбужденное состояние</div>
+                </div>
+                
+                <div class="legend-item">
+                    <div class="state-example state-superposition">±</div>
+                    <div class="state-description">Суперпозиция - α|0⟩ + β|1⟩</div>
+                </div>
+                
+                <div class="legend-item">
+                    <div class="state-example state-entangled">∞</div>
+                    <div class="state-description">Запутанное состояние</div>
+                </div>
+            </div>
+            
+            <div class="quantum-formulas">
+                <h4>Основные формулы</h4>
+                <div class="formula">|ψ⟩ = α|0⟩ + β|1⟩</div>
+                <div class="formula">|α|² + |β|² = 1</div>
+                <div class="formula">P(0) = |α|², P(1) = |β|²</div>
+                <div class="formula">θ = 2·arccos(|α|)</div>
+                <div class="formula">φ = arg(β) - arg(α)</div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Модальное окно справки -->
+    <div id="help-modal" class="modal" aria-hidden="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Справка - Квантовая машина Тьюринга</h2>
+                <button type="button" class="modal-close" aria-label="Закрыть">&times;</button>
+            </div>
+            <div class="modal-body">
+                <h3>Горячие клавиши</h3>
+                <ul>
+                    <li><kbd>Space</kbd> - Старт/Стоп</li>
+                    <li><kbd>S</kbd> - Один шаг</li>
+                    <li><kbd>R</kbd> - Сброс</li>
+                    <li><kbd>T</kbd> - Переключить тему</li>
+                    <li><kbd>H</kbd> - Справка</li>
+                </ul>
+                
+                <h3>Квантовые вентили</h3>
+                <ul>
+                    <li><strong>H</strong> - Создаёт суперпозицию</li>
+                    <li><strong>X</strong> - Квантовый NOT</li>
+                    <li><strong>Z</strong> - Инверсия фазы</li>
+                    <li><strong>CNOT</strong> - Создаёт запутанность</li>
+                </ul>
+                
+                <h3>Алгоритмы</h3>
+                <ul>
+                    <li><strong>Дойч</strong> - Различает константные и сбалансированные функции</li>
+                    <li><strong>Гровер</strong> - Поиск в неупорядоченной базе данных</li>
+                    <li><strong>Белл</strong> - Демонстрация квантовой запутанности</li>
+                </ul>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-primary modal-close">Понятно</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Контейнер для уведомлений -->
+    <div id="notifications-container" class="notifications-container" aria-live="polite"></div>
+
+    <!-- Главный скрипт -->
+    <script type="module" src="js/index.js"></script>
+</body>
+</html>
